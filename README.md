@@ -8,7 +8,7 @@ It has been developed using [*Python Telegram Bot*](https://python-telegram-bot.
 2. Make sure you have installed the [*Python Telegram Bot*](https://python-telegram-bot.readthedocs.io/en/stable/) library (v6.0.0).
 3. Download this project and edit the file config.txt
    * Add your bot token
-   * Add the system path to the files
+   * Add the system path to the folder
    * Add your telegram user ID. It is a unique identifier that can be found in your profile
 4. Launch AnonymousForwardBot.py
 5. Start your bot by sending a /start command in Telegram
