@@ -70,7 +70,7 @@ def send(bot, user, message, tried=0, **kwargs):
             parse_mode=markdown)
     except TelegramError as e: 
         logger.log("TelegramError when sending message to {}:".format(user)
-        logger.log("{} - Try {}".format(e.message, tried))
+        logger.log("\tTry #{}/3".format(e.message, tried))
         if e.message == 'Timed out' and tried < 3:
             send(
                 bot, user, message, tried=tried+1,
