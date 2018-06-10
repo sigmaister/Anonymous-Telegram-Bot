@@ -17,5 +17,11 @@ It has been developed using [*Python Telegram Bot*](https://python-telegram-bot.
 1. When a user messages the bot you are hosting, the bot will forward their message to you. This step works for all kind of messages, be it images, audio, stickers, text, ... you name it.
 2. You can choose to ignore the message or reply to it. If you choose to reply to the forwarded message, the bot will send the text to the user at the other end of the conversation.
 
+# Future improvements
+
+[ ] Add ability to block/unblock users
+[ ] Allow non-text replies
+[ ] Warn owner about forwarded messages sent to the bot
+
 # Contact
 You can contact me via Telegram &rarr; [@Fndh_Anonymous_Bot](https://t.me/Fndh_Anonymous_Bot)
