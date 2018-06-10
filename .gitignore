@@ -106,5 +106,8 @@ venv.bak/
 # Config file
 config.txt
 
+# Log file
+log.out
+
 #DB files
 *.db

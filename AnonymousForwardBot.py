@@ -27,7 +27,7 @@ with open('config.txt', 'r') as f:
 
 #---DATABASE---
 
-db_name = 'Anon_Forward_Bot.db'
+db_name = 'DB_AnonymousForwardBot.db'
 
 sql_connection = sqlite3.connect(db_name, check_same_thread=False)
 sql_cursor = sql_connection.cursor()
@@ -69,8 +69,8 @@ def send(bot, user, message, tried=0, **kwargs):
             reply_markup=replymarkup,
             parse_mode=markdown)
     except TelegramError as e: 
-        logger.log("TelegramError when sending message to {}:".format(user)
-        logger.log("\tTry #{}/3".format(e.message, tried))
+        logger.log("TelegramError when sending message to {}:".format(user))
+        logger.log("\t{} - Try #{}/3".format(e.message, tried))
         if e.message == 'Timed out' and tried < 3:
             send(
                 bot, user, message, tried=tried+1,
@@ -103,7 +103,11 @@ def help(bot, update, args):
     /help
     '''
     bot.sendChatAction(update.message.chat_id, ChatAction.TYPING)
-    help_text = "Help text"
+    help_text = "Hi!\n\n"
+    help_text += "This bot forwards your messages to its owner "
+    help_text += " while keeping him anonymous. If you're interested"
+    help_text += " in the source code, visit:\n\n\t"
+    help_text += "https://github.com/fndh/Anonymous-Telegram-Bot"
     send(bot, update.message.chat_id, help_text)
 
 
