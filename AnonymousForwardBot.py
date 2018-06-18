@@ -10,10 +10,14 @@ will surely make my day.
 '''
 import logging
 from telegram import ParseMode, Message, Chat, Bot, TelegramError, ChatAction
-from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
-import sqlite3
+from telegram.ext import (MessageHandler, Filters, Updater, CommandHandler,
+    CallbackQueryHandler)
 
+import SQLiteWrapper
 import BotLogger
+import BotBlocker
+import BotMessager
+import BotCallbackHandler
 
 #---READ CONFIG---
 
@@ -25,63 +29,63 @@ with open('config.txt', 'r') as f:
     my_path  = f.readline().rstrip('\n').rstrip('\r')
     my_id    = f.readline().rstrip('\n').rstrip('\r')
 
+#---LOGGING---
+
+logging_enabled = True
+logger = BotLogger.Logger(my_path, logging_enabled)
+logger.log("Logging enabled")
+
 #---DATABASE---
 
 db_name = 'DB_AnonymousForwardBot.db'
+sql = SQLiteWrapper.SQLiteWrapper(db_name)
+sql.execute_and_commit(
+    "CREATE TABLE IF NOT EXISTS forwarded_msg_ids (message_id, user_id);")
+    
+#---BLOCKED USERS MANAGEMENT---
 
-sql_connection = sqlite3.connect(db_name, check_same_thread=False)
-sql_cursor = sql_connection.cursor()
-sql_cursor.execute(
-        "CREATE TABLE IF NOT EXISTS msgid_forwarderid (msg, forwarder);")
-sql_connection.commit()
+blocker = BotBlocker.Blocker(sql)
 
+#---MESSAGE UTILITIES---
 
-#---LOGGING---
-
-logger = BotLogger.Logger(my_path)
+messager = BotMessager.Messager(logger)
+callback_handler = BotCallbackHandler.CallbackHandler(messager, sql)
 
 
 #---AUX FUNCTIONS---
 
-def get_kwargs(kw_dict, key, default):
+def get_root_message(message):
     '''
-    Using kwargs.get(key, default) was giving some problems on invalid keys
+    Gets the message at the root of a reply chain. Forwarded
+    messages lose their replies.
     '''
-    if key in kw_dict:
-        return kw_dict[key]
+    root_message = message
+    while root_message.reply_to_message is not None:
+        root_message = root_message.reply_to_message
+    return root_message
+
+
+def get_forwarded_userid(message):
+    '''
+    Fetches the user ID of a recieved message. 
+    '''
+    #Check that the message is a forward from a user
+    forwarded_user = message.forward_from
+    if forwarded_user is None:
+        return None
+    
+    #Check if the message was forwarded by the user to the bot
+    sql_select = sql.select_and_fetch(
+        "SELECT user_id FROM forwarded_msg_ids WHERE message_id=?;",
+        (message.message_id,))
+        
+    user_id = ''
+    if sql_select:
+        #First element
+        user_id = sql_select[0][0]
     else:
-        return default
-
-
-def send(bot, user, message, tried=0, **kwargs):
-    '''
-    Send messages with markdown, markup or replies
-    '''
-    try:
-        reply = get_kwargs(kwargs, 'reply', None)
-        replymarkup = get_kwargs(kwargs, 'markup', None)
-        markdown = get_kwargs(kwargs, 'markdown', 'HTML')
-
-        bot.sendMessage(
-            str(user),
-            message,
-            reply_to_message_id=reply,
-            reply_markup=replymarkup,
-            parse_mode=markdown)
-    except TelegramError as e: 
-        logger.log("TelegramError when sending message to {}:".format(user))
-        logger.log("\t{} - Try #{}/3".format(e.message, tried))
-        if e.message == 'Timed out' and tried < 3:
-            send(
-                bot, user, message, tried=tried+1,
-                reply=reply, markup=replymarkup, markdown=markdown)
-    except RuntimeError as e:
-        logger.log("RuntimeError when sending message")
-        logger.log(e.message)
-    except Exception as e:
-        logger.log("Unhandled error when sending message")
-        logger.log(e.message)
-
+        user_id = forwarded_user.id
+    return user_id
 
 #---BASIC COMMANDS---
 
@@ -90,9 +94,9 @@ def start(bot, update):
     User started the bot. Greet with message
     /start
     '''
-    bot.sendChatAction(update.message.chat_id, ChatAction.TYPING)
+    messager.send_typing(bot, update.message.chat_id)
     welcome_msg = "Hello!"
-    send(
+    messager.send_text(
         bot, update.message.chat_id, welcome_msg,
         reply=update.message.message_id)
 
@@ -102,13 +106,13 @@ def help(bot, update, args):
     Send help
     /help
     '''
-    bot.sendChatAction(update.message.chat_id, ChatAction.TYPING)
+    messager.send_typing(bot, update.message.chat_id)
     help_text = "Hi!\n\n"
     help_text += "This bot forwards your messages to its owner "
     help_text += " while keeping him anonymous. If you're interested"
     help_text += " in the source code, visit:\n\n\t"
     help_text += "https://github.com/fndh/Anonymous-Telegram-Bot"
-    send(bot, update.message.chat_id, help_text)
+    messager.send_text(bot, update.message.chat_id, help_text)
 
 
 #---LOGGING COMMANDS---
@@ -118,8 +122,7 @@ def clear_logs(bot, update):
     Delete log file if prompted from owner id
     /clearlogs
     '''
-    if str(update.message.from_user.id) == my_id:
-        logger.clear()
+    logger.clear()
 
 
 def get_logs(bot, update, args):
@@ -127,88 +130,101 @@ def get_logs(bot, update, args):
     Get the last N lines from the log file, defaults to 50
     /getlogs [N]
     '''
-    if str(update.message.from_user.id) == my_id:
-        bot.sendChatAction(update.message.chat_id, ChatAction.TYPING)
-        try:
-            msg = ''
-            if len(args) and int(args[0]) > 0:
-                lines = int(args[0])
-                msg = logger.get(lines)
-            else:
-                msg = logger.get(50)
-            send(bot, update.message.chat_id, msg)
-        except Exception as e:
-            logger.log('getlogs - %s' %(e.message))
-            send(
-                bot, update.message.chat_id,
-                "Error while getting logs {}".format(e.message))
+    messager.send_typing(bot, update.message.chat_id)
+    try:
+        msg = ''
+        if len(args) and int(args[0]) > 0:
+            lines = int(args[0])
+            msg = logger.get(lines)
+        else:
+            msg = logger.get(50)
+        messager.send_text(bot, update.message.chat_id, msg)
+    except Exception as e:
+        logger.log('getlogs - %s' %(e.message))
+        messager.send_text(
+            bot, update.message.chat_id,
+            "Error while getting logs {}".format(e.message))
 
+
+#---BLOCKING COMMANDS---
+
+def block_user(bot, update):
+    '''
+    Ignore all messages sent by a user
+    '''
+    user_id = get_forwarded_userid(update.message.reply_to_message)
+    if user_id is not None:
+        blocker.block_user(user_id)
+        messager.send_text(bot, my_id, "Blocked user {}".format(user_id))
+    
+
+
+def unblock_user(bot, update):
+    '''
+    Recieve messages from the user again
+    '''
+    user_id = get_forwarded_userid(update.message.reply_to_message)
+    if user_id is not None:
+        blocker.unblock_user(user_id)
+        messager.send_text(bot, my_id, "Unblocked user {}".format(user_id))
+
+
+def list_blocked_users(bot, update):
+    users = blocker.get_blocked_users()
+    msg = "Blocked ids:\n\n"
+    msg += '\n'.join(users) if users else 'No blocked IDs'
+    messager.send_text(bot, my_id, msg)
 
 #---MESSAGE HANDLING---
 
 def new_message(bot, update):
     '''
-    Bot received a new message
+    User talking to the bot
     '''
-    userinfo = update.message.from_user
-    logger.log("New message from @{}".format(userinfo.username))
-    if str(userinfo.id) == my_id:
-        outgoing_message(bot, update)
-    else:
-        incoming_message(bot, update)
+    logger.log("New message")
+    sent_msg = sender.forward_message(update.message, my_id)
+    logger.log("\tForwarded to owner, msg id {}".format(sent_msg.message_id))
     
+    user = update.message.from_user
+    forwarded_user = update.message.forward_from
+    #The user forwarded a message to the bot
+    if forwarded_user is not None:
+        logger.log("\tOriginal message was forwarded from somebody")
+        log_msg = "\t\tStoring message id {}".format(sent_msg.message_id)
+        log_msg += " with user id {}".format(user.id)
+        logger.log(log_msg)
+        
+        #Store relation between message id and user id
+        sql.execute_and_commit(
+            "INSERT INTO forwarded_msg_ids (message_id, user_id) VALUES (?, ?);",
+            (sent_msg.message_id, user.id))
+        
+        #Notify owner that last message was a forward
+        messager.send_text(
+            bot, my_id,
+            "Message forwarded by user @{}".format(user.username),
+            reply=sent_msg.message_id)
 
-def outgoing_message(bot, update):
-    '''
-    Owner replying to a forwarded message
-    '''
-    logger.log("\tIs outgoing")
-    replied_message = update.message.reply_to_message
-    if replied_message is None:
-        log("\tNot replying to anything")
-        return
-    
-    #Cached message id? If it is, then somebody forwarded a post to the bot
-    #Get the user info from the forwarder, not the forwarded
-    sql_cursor.execute(
-        "SELECT forwarder FROM msgid_forwarderid WHERE msg=?;",
-        (replied_message.message_id,))
-    sql_select = sql_cursor.fetchone()
 
-    user_id = ''
-    if sql_select is not None:
-        user_id = sql_select[0]
-    else:
-        user_id = replied_message.forward_from.id
+def owner_message(bot, update):
+    '''
+    Owner talking to the bot
+    '''
+    #Get user message the owner is replying to (accepts reply chains).
+    message = get_root_message(update.message)
+    #Get user id
+    user_id = get_forwarded_userid(message)
     
     log_msg = "\tReplying to user id {}".format(user_id)
     log_msg += ", "
-    log_msg += "msg id {}".format(replied_message.message_id)
+    log_msg += "msg id {}".format(message.message_id)
     logger.log(log_msg)
     if user_id is not None:
-        send(bot, user_id, update.message.text.encode('utf-8'))
+        #Copy the reply text and send to the user
+        messager.send_text(bot, user_id, update.message.text.encode('utf-8'))
     else:
-        send(bot, my_id, "user_id is None")
+        messager.send_text(bot, my_id, "user_id is None")
     
-
-def incoming_message(bot, update):
-    '''
-    User talking to the bot
-    '''
-    logger.log("\tIs incoming")
-    sent_msg = update.message.forward(my_id)
-    logger.log("\tForwarded to owner, msg id {}".format(sent_msg.message_id))
-    #Somebody forwarded a message to the bot
-    if update.message.forward_from is not None:
-        logger.log("\tOriginal message was forwarded from somebody")
-        log_msg = "\t\tStoring message id {}".format(sent_msg.message_id)
-        log_msg += " with user id {}".format(update.message.from_user.id)
-        logger.log(log_msg)
-        sql_cursor.execute(
-            "INSERT INTO msgid_forwarderid (msg, forwarder) VALUES (?, ?);",
-            (sent_msg.message_id, update.message.from_user.id))
-        sql_connection.commit()
-
 
 #---START BOT---
 
@@ -237,15 +253,61 @@ dispatcher = updater.dispatcher
 #    Add handlers to bot
 #-----------------------------------
 logger.log('Adding handlers')
-dispatcher.add_handler(CommandHandler('start', start))
+owner_filter = Filters.chat(chat_id=int(my_id))
+#Public commands
+dispatcher.add_handler(CommandHandler(
+    'start',
+    start))
+dispatcher.add_handler(CommandHandler(
+    'help',
+    help,
+    filters=~owner_filter,
+    pass_args = True))
 
-dispatcher.add_handler(CommandHandler('help', help, pass_args = True))
+#Owner commands
+dispatcher.add_handler(CommandHandler(
+    'help',
+    callback_handler.send_initial_message,
+    filters=owner_filter))
+    
+dispatcher.add_handler(CallbackQueryHandler(
+    callback_handler.handle_callback))
+    
+dispatcher.add_handler(CommandHandler(
+    'getlogs',
+    get_logs,
+    filters=owner_filter,
+    pass_args=True))
+dispatcher.add_handler(CommandHandler(
+    'clearlogs',
+    clear_logs,
+    filters=owner_filter))
+dispatcher.add_handler(CommandHandler(
+    'block',
+    block_user,
+    filters=owner_filter & Filters.reply))
+dispatcher.add_handler(CommandHandler(
+    'unblock',
+    unblock_user,
+    filters=owner_filter & Filters.reply))
+dispatcher.add_handler(CommandHandler(
+    'listblockedusers',
+    list_blocked_users,
+    filters=owner_filter))
 
-dispatcher.add_handler(CommandHandler('getlogs', get_logs, pass_args=True))
-dispatcher.add_handler(CommandHandler('clearlogs', clear_logs))
+#Public messages
+msg_filter = ~Filters.command & ~Filters.status_update
 
-msg_filters = ~Filters.command & ~Filters.status_update
-dispatcher.add_handler(MessageHandler(msg_filters, new_message))
+dispatcher.add_handler(MessageHandler(
+    msg_filter & ~owner_filter,
+    new_message))
+
+#Owner messages
+dispatcher.add_handler(MessageHandler(
+    msg_filter & owner_filter & Filters.reply,
+    owner_message))
+
+
 
 #-----------------------------------
 #    Start polling

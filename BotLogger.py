@@ -9,20 +9,25 @@ will surely make my day.
 '''
 class Logger():
     
-    def __init__(self, logpath):
+    def __init__(self, logpath, enabled=True):
         self.logpath = logpath
         self.logfile = self.logpath + 'log.out'
+        self.enabled = enabled
+
 
     def log(self, string):
-        with open(self.logfile, 'a') as f:
-            f.write(string + '\n')
+        if self.enabled:
+            with open(self.logfile, 'a') as f:
+                f.write(str(string) + '\n')
+
 
     def get(self, lines=50):
         with open(self.logfile, 'r') as f:
             read_lines = f.readlines()
             requested_lines = read_lines[-lines:]
             return ''.join(requested_lines)
-        
-    def clear(self):
+
+
+    def clear(self, bot, update):
         with open(self.logfile, 'w') as f:
-            f.write('')            
+            f.write('')
