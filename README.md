@@ -21,6 +21,7 @@ It has been developed using [*Python Telegram Bot*](https://python-telegram-bot.
 
 - [ ] Allow non-text replies
 - [ ] Implement multi-column keyboard in owner /help messages
+
 You can find the changelog [here](https://github.com/fndh/Anonymous-Telegram-Bot/wiki/Changelog)
 
 # Contact
