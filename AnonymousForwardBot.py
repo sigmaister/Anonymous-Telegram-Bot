@@ -182,7 +182,7 @@ def new_message(bot, update):
     User talking to the bot
     '''
     logger.log("New message")
-    sent_msg = sender.forward_message(update.message, my_id)
+    sent_msg = messager.forward_message(update.message, my_id)
     logger.log("\tForwarded to owner, msg id {}".format(sent_msg.message_id))
     
     user = update.message.from_user
