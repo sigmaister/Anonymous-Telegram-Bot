@@ -5,7 +5,7 @@ It has been developed using [*Python Telegram Bot*](https://python-telegram-bot.
 
 # How to set it up
 1. First you will need a bot token, which you can obtain from the [@BotFather](https://t.me/BotFather).
-2. Make sure you have installed the [*Python Telegram Bot*](https://python-telegram-bot.readthedocs.io/en/stable/) library (v6.0.0).
+2. Make sure you have installed the [*Python Telegram Bot*](https://python-telegram-bot.readthedocs.io/en/stable/) library (v10.1.0).
 3. Download this project and edit the file config.txt
    * Add your bot token
    * Add the system path to the folder
