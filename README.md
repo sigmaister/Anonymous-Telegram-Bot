@@ -19,9 +19,10 @@ It has been developed using [*Python Telegram Bot*](https://python-telegram-bot.
 
 # Future improvements
 
-- [ ] Add ability to block/unblock users
 - [ ] Allow non-text replies
-- [ ] Warn owner about forwarded messages sent to the bot
+- [ ] Implement multi-column keyboard in owner /help messages
+
+You can find the changelog [here](https://github.com/fndh/Anonymous-Telegram-Bot/wiki/Changelog)
 
 # Contact
 You can contact me via Telegram &rarr; [@Fndh_Anonymous_Bot](https://t.me/Fndh_Anonymous_Bot)
