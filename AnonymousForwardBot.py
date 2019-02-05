@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 '''
 This software has been developed by github user fndh (http://github.com/fndh)
 
@@ -9,6 +9,7 @@ and please consider sending me a message if you are using this software! It
 will surely make my day.
 '''
 import logging
+import time
 from telegram import ParseMode, Message, Chat, Bot, TelegramError, ChatAction
 from telegram.ext import (MessageHandler, Filters, Updater, CommandHandler,
     CallbackQueryHandler)
@@ -140,10 +141,10 @@ def get_logs(bot, update, args):
             msg = logger.get(50)
         messager.send_text(bot, update.message.chat_id, msg)
     except Exception as e:
-        logger.log('getlogs - %s' %(e.message))
+        logger.log('getlogs - {}'.format(e))
         messager.send_text(
             bot, update.message.chat_id,
-            "Error while getting logs {}".format(e.message))
+            "Error while getting logs {}".format(e))
 
 
 #---BLOCKING COMMANDS---
@@ -221,14 +222,14 @@ def owner_message(bot, update):
     logger.log(log_msg)
     if user_id is not None:
         #Copy the reply text and send to the user
-        messager.send_text(bot, user_id, update.message.text.encode('utf-8'))
+        messager.send_text(bot, user_id, update.message.text)
     else:
         messager.send_text(bot, my_id, "user_id is None")
     
 
 #---START BOT---
 
-logger.log('-'*20)
+logger.log('-'*10 + time.strftime(" %H:%M:%S ") + '-'*10)
 logger.log('Starting bot...')
 
 #-----------------------------------

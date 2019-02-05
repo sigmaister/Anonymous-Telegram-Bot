@@ -34,8 +34,8 @@ class Messager():
             self.logger.log(
                 "TelegramError when sending message to {}:".format(user))
             self.logger.log(
-                "\t{} - Try #{}/3".format(e.message, tried))
-            if e.message == 'Timed out' and tried < 3:
+                "\t{} - Try #{}/3".format(e, tried))
+            if e == 'Timed out' and tried < 3:
                 return self.send_text(
                     bot, user, message,
                     tried=tried+1,
@@ -45,10 +45,10 @@ class Messager():
                     
         except RuntimeError as e:
             self.logger.log("RuntimeError when sending message")
-            self.logger.log(e.message)
+            self.logger.log(e)
         except Exception as e:
             self.logger.log("Unhandled error when sending message")
-            self.logger.log(e.message)
+            self.logger.log(e)
 
 
     def send_typing(self, bot, chat_id):
@@ -77,8 +77,8 @@ class Messager():
         kb_buttons = []
         
         for n in range(len(buttons)):
-            text = buttons[n].encode('utf-8')
-            callback = callbacks[n].encode('utf-8')
+            text = buttons[n]
+            callback = callbacks[n]
             
             kb_button = InlineKeyboardButton(
                 text=text,

@@ -26,7 +26,7 @@ class CallbackHandler():
     def send_initial_message(self, bot, update):
         self.messager.send_typing(bot, update.message.chat_id)
         
-        help_msg = self.__get_state_text('default').encode('utf-8')
+        help_msg = self.__get_state_text('default')
         texts, callbacks = self.__get_state_markup('default')
         keyboard = self.messager.create_inline_keyboard(texts, callbacks)
         
@@ -40,7 +40,7 @@ class CallbackHandler():
         callback_data = update.callback_query.data
         
         #Update message text
-        new_message_text = self.__get_state_text(callback_data).encode('utf-8')
+        new_message_text = self.__get_state_text(callback_data)
         update.callback_query.edit_message_text(new_message_text)
         
         #Update inline keyboard
@@ -71,18 +71,18 @@ class CallbackHandler():
             --Relation between states and their available buttons
             CREATE TABLE callback_buttons (state, button, PRIMARY KEY (state, button));
             
-            INSERT INTO callback_buttons (state, button) VALUES('default', 'Logging \xF0\x9F\x93\x84');
-            INSERT INTO callback_buttons (state, button) VALUES('default', 'User management \xF0\x9F\x91\xA4');
-            INSERT INTO callback_buttons (state, button) VALUES('logging', 'Go back \xE2\x86\xA9');
-            INSERT INTO callback_buttons (state, button) VALUES('blocking', 'Go back \xE2\x86\xA9');
+            INSERT INTO callback_buttons (state, button) VALUES('default', 'Logging \U0001F4C4');
+            INSERT INTO callback_buttons (state, button) VALUES('default', 'User management \U0001F465');
+            INSERT INTO callback_buttons (state, button) VALUES('logging', 'Go back \U000023EA');
+            INSERT INTO callback_buttons (state, button) VALUES('blocking', 'Go back \U000023EA');
             
             
             --Relation between buttons and their callback data
             CREATE TABLE callback_state (button, next_state);
             
-            INSERT INTO callback_state (button, next_state) VALUES('Logging \xF0\x9F\x93\x84', 'logging');
-            INSERT INTO callback_state (button, next_state) VALUES('User management \xF0\x9F\x91\xA4', 'blocking');
-            INSERT INTO callback_state (button, next_state) VALUES('Go back \xE2\x86\xA9', 'default');
+            INSERT INTO callback_state (button, next_state) VALUES('Logging \U0001F4C4', 'logging');
+            INSERT INTO callback_state (button, next_state) VALUES('User management \U0001F465', 'blocking');
+            INSERT INTO callback_state (button, next_state) VALUES('Go back \U000023EA', 'default');
             """)
 
 
