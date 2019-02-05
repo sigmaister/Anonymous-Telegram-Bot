@@ -2,7 +2,9 @@
 This project is a Telegram bot. The bot itself acts as a secure wall between other users and yourself, making you anonymous while providing text replies to the other users. The idea behind this bot is for people who own public channels and don't want to expose their private profiles to everybody.
 
 It has been developed using **Python v3.5** and [*Python Telegram Bot*](https://python-telegram-bot.readthedocs.io/en/stable/) v11.1.0
+
 ~~22/11/18 -> I will update the code to the latest versions of Python and Python Telegram Bot ASAP.~~
+
 05/02/19 -> Updated to latest versions!
 
 # How to set it up
