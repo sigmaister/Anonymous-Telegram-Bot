@@ -3,9 +3,7 @@ This project is a Telegram bot. The bot itself acts as a secure wall between oth
 
 It has been developed using **Python v3.5** and [*Python Telegram Bot*](https://python-telegram-bot.readthedocs.io/en/stable/) v11.1.0
 
-~~22/11/18 -> I will update the code to the latest versions of Python and Python Telegram Bot ASAP.~~
-
-05/02/19 -> Updated to latest versions!
+    You can find the Python2 release over [here](https://github.com/fndh/Anonymous-Telegram-Bot/releases/tag/b784a13)
 
 # How to set it up
 1. First you will need a bot token, which you can obtain from the [@BotFather](https://t.me/BotFather).
