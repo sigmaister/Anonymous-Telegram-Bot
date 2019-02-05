@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 '''
 This software has been developed by github user fndh (http://github.com/fndh)
 
