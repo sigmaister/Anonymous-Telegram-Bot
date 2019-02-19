@@ -22,7 +22,7 @@ It has been developed using **Python v3.5** and [*Python Telegram Bot*](https://
 
 - [x] Updated to Python v3
 - [ ] Allow non-text replies
-- [ ] Implement multi-column keyboard in owner /help messages
+- [x] Implement multi-column keyboard in owner /help messages
 
 You can find the changelog [here](https://github.com/fndh/Anonymous-Telegram-Bot/wiki/Changelog)
 
