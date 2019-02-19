@@ -11,17 +11,25 @@ class Logger():
     
     def __init__(self, logpath, enabled=True):
         self.logpath = logpath
+        # Default to file 'log.out'
         self.logfile = self.logpath + 'log.out'
         self.enabled = enabled
 
 
     def log(self, string):
+        '''
+        Log an element.
+
+        This method will only log the information to the file if logging has
+        been enabled.'''
+        # Log only if logging has been enabled
         if self.enabled:
             with open(self.logfile, 'a') as f:
                 f.write(str(string) + '\n')
 
 
     def get(self, lines=50):
+        '''Get the last N lines of the log file, defaults to 50.'''
         with open(self.logfile, 'r') as f:
             read_lines = f.readlines()
             requested_lines = read_lines[-lines:]
@@ -29,5 +37,6 @@ class Logger():
 
 
     def clear(self, bot, update):
+        '''Clear all the information stored in the log file.'''
         with open(self.logfile, 'w') as f:
             f.write('')

@@ -16,6 +16,11 @@ class Blocker():
 
 
     def block_user(self, user_id):
+        '''
+        Block a user.
+
+        Updated the blocked table by adding the user ID if it is not already
+        there.'''
         if not self.is_user_blocked(user_id):
             self.sql.execute_and_commit(
                 "INSERT INTO blocked_user_ids (user_id) VALUES (?);",
@@ -23,12 +28,17 @@ class Blocker():
 
 
     def unblock_user(self, user_id):
+        '''
+        Unblock a user.
+
+        Remove the blocked user ID from the block table if the ID exists.'''
         self.sql.execute_and_commit(
             "DELETE FROM blocked_user_ids WHERE user_id=?;",
             (user_id,))
 
 
     def get_blocked_users(self):
+        '''Retrieve a list of the currently blocked user IDs.'''
         rows = self.sql.select_and_fetch(
             "SELECT user_id FROM blocked_user_ids;")
         user_ids = [str(user_id[0]) for user_id in rows]
@@ -36,6 +46,7 @@ class Blocker():
         
 
     def is_user_blocked(self, user_id):
+        '''Verify if a user ID is stored in the block table.'''
         matched_ids = self.sql.select_and_fetch(
             "SELECT COUNT(*) FROM blocked_user_ids WHERE user_id=?",
             (user_id,))

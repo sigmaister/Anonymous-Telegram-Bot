@@ -10,6 +10,7 @@ will surely make my day.
 '''
 import logging
 import time
+import requests
 from telegram import ParseMode, Message, Chat, Bot, TelegramError, ChatAction
 from telegram.ext import (MessageHandler, Filters, Updater, CommandHandler,
     CallbackQueryHandler)
@@ -92,11 +93,11 @@ def get_forwarded_userid(message):
 
 def start(bot, update):
     '''
-    User started the bot. Greet with message
+    User started the bot. Greet with message.
     /start
     '''
     messager.send_typing(bot, update.message.chat_id)
-    welcome_msg = "Hello!"
+    welcome_msg = "Hello!\nPlease leave your message here and I will answer ASAP."
     messager.send_text(
         bot, update.message.chat_id, welcome_msg,
         reply=update.message.message_id)
@@ -104,7 +105,7 @@ def start(bot, update):
 
 def help(bot, update, args):
     '''
-    Send help
+    Send help.
     /help
     '''
     messager.send_typing(bot, update.message.chat_id)
@@ -120,7 +121,7 @@ def help(bot, update, args):
 
 def clear_logs(bot, update):
     '''
-    Delete log file if prompted from owner id
+    Delete log file if prompted from owner id.
     /clearlogs
     '''
     logger.clear()
@@ -128,7 +129,7 @@ def clear_logs(bot, update):
 
 def get_logs(bot, update, args):
     '''
-    Get the last N lines from the log file, defaults to 50
+    Get the last N lines from the log file, defaults to 50.
     /getlogs [N]
     '''
     messager.send_typing(bot, update.message.chat_id)
@@ -151,7 +152,8 @@ def get_logs(bot, update, args):
 
 def block_user(bot, update):
     '''
-    Ignore all messages sent by a user
+    Ignore all messages sent by a user.
+    /block (While replying to a message)
     '''
     user_id = get_forwarded_userid(update.message.reply_to_message)
     if user_id is not None:
@@ -162,7 +164,8 @@ def block_user(bot, update):
 
 def unblock_user(bot, update):
     '''
-    Recieve messages from the user again
+    Recieve messages from a blocked user again.
+    /unblock (While replying to a message)
     '''
     user_id = get_forwarded_userid(update.message.reply_to_message)
     if user_id is not None:
@@ -171,6 +174,10 @@ def unblock_user(bot, update):
 
 
 def list_blocked_users(bot, update):
+    '''
+    Get the list of blocked user IDs.
+    /listblockedusers
+    '''
     users = blocker.get_blocked_users()
     msg = "Blocked ids:\n\n"
     msg += '\n'.join(users) if users else 'No blocked IDs'
@@ -210,6 +217,7 @@ def new_message(bot, update):
 def owner_message(bot, update):
     '''
     Owner talking to the bot
+    Only works if the owner is replying to a user message.
     '''
     #Get user message the owner is replying to (accepts reply chains).
     message = get_root_message(update.message)
@@ -230,7 +238,8 @@ def owner_message(bot, update):
 #---START BOT---
 
 logger.log('-'*10 + time.strftime(" %H:%M:%S ") + '-'*10)
-logger.log('Starting bot...')
+ip = requests.get("http://jsonip.com").json()['ip']
+logger.log('Starting bot at {}'.format(ip))
 
 #-----------------------------------
 #    Start system logging

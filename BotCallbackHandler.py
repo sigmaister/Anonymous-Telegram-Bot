@@ -24,6 +24,7 @@ class CallbackHandler():
 
 
     def send_initial_message(self, bot, update):
+        '''Prompt the user with the main help keyboard.'''
         self.messager.send_typing(bot, update.message.chat_id)
         
         help_msg = self.__get_state_text('default')
@@ -35,8 +36,8 @@ class CallbackHandler():
             help_msg, reply_markup=keyboard)
         
 
-
     def handle_callback(self, bot, update):
+        '''Recieve a callback operation and act accordingly.'''
         callback_data = update.callback_query.data
         
         #Update message text
@@ -51,7 +52,11 @@ class CallbackHandler():
 
 
     def __create_tables(self):
-        #Only called on launch if any table doesn't exist
+        '''
+        Create the necessary command and callback tables in the DB.
+
+        Only called at launch if any of the tables doesn't exist.
+        '''
         self.sql.execute_script_and_commit("""
             DROP TABLE IF EXISTS callback_message;
             DROP TABLE IF EXISTS callback_buttons;
@@ -87,6 +92,7 @@ class CallbackHandler():
 
 
     def __get_state_text(self, state):
+        '''Retrieve the text message to display for a certain callback state.'''
         selection = self.sql.select_and_fetch(
             "SELECT message FROM callback_message WHERE state=?",
             (state,))
@@ -94,33 +100,21 @@ class CallbackHandler():
 
 
     def __get_state_markup(self, state):
+        '''Retrieve the buttons and callbacks for a certain callback state.'''
         selection = self.sql.select_and_fetch(
             "SELECT button FROM callback_buttons WHERE state=?",
             (state,))
         #Get button texts
-        buttons = [row[0] for row in selection]
-        callbacks = []
+        button_rows = [row[0].split(",") for row in selection]
+        callback_rows = []
         #Get callbacks associated to the buttons
-        for button in buttons:
-            selection = self.sql.select_and_fetch(
-                "SELECT next_state FROM callback_state WHERE button=?",
-                (button,))
-            callbacks.append(selection[0][0])
-        return buttons, callbacks
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        for button_row in button_rows:
+            callback_row = []
+            for button in button_row:
+                selection = self.sql.select_and_fetch(
+                    "SELECT next_state FROM callback_state WHERE button=?",
+                    (button,))
+                callback = selection[0][0]
+                callback_row.append(callback)
+            callback_rows.append(callback_row)
+        return button_rows, callback_rows

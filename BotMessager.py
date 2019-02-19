@@ -30,12 +30,14 @@ class Messager():
                 reply_markup=reply_markup,
                 parse_mode=parse_mode)
             
-        except TelegramError as e: 
+        except TelegramError as e:
+            # Log the errors
             self.logger.log(
                 "TelegramError when sending message to {}:".format(user))
             self.logger.log(
                 "\t{} - Try #{}/3".format(e, tried))
             if e == 'Timed out' and tried < 3:
+                # Retry up to 3 times
                 return self.send_text(
                     bot, user, message,
                     tried=tried+1,
@@ -62,33 +64,42 @@ class Messager():
         return message.forward(user_id)
 
 
-    def create_inline_keyboard(self, buttons, callbacks):
+    def create_inline_keyboard(self, button_texts, callbacks):
         '''
         Generate a keyboard with the options specified.
+
         Make sure bot handles callback methods before creating a keyboard.
-        
-        #TO DO: Add multi-column support
         '''
-        if buttons is None or callbacks is None:
+        if button_texts is None or callbacks is None:
             return None
-        if len(buttons) != len(callbacks):
+        if len(button_texts) != len(callbacks):
             raise ValueError("Buttons and callbacks size doesn't match")
         
         kb_buttons = []
         
-        for n in range(len(buttons)):
-            text = buttons[n]
-            callback = callbacks[n]
-            
-            kb_button = InlineKeyboardButton(
-                text=text,
-                callback_data=callback)
-            kb_buttons.append([kb_button])
+        # Iterate over information rows
+        for n in range(len(button_texts)):
+            # Extract display text and callback function
+            button_text_row = button_texts[n]
+            callback_row = callbacks[n]
+            button_row = []
+
+            # Verify size
+            if len(button_text_row) != len(callback_row):
+                raise ValueError("Buttons and callbacks size doesn't match")
+            # Iterate over button texts
+            for m in range(len(button_text_row)):
+                text = button_text_row[m]
+                callback = callback_row[m]
+                # Create button
+                kb_button = InlineKeyboardButton(
+                    text=text,
+                    callback_data=callback)
+                # Add to button row
+                button_row.append(kb_button)
+
+            # Add row to keyboard
+            kb_buttons.append(button_row)
         
         keyboard = InlineKeyboardMarkup(kb_buttons)
         return keyboard
-        
-
-
-
-
