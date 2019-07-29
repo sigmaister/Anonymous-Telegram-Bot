@@ -238,7 +238,11 @@ def owner_message(bot, update):
 #---START BOT---
 
 logger.log('-'*10 + time.strftime(" %H:%M:%S ") + '-'*10)
-ip = requests.get("http://jsonip.com").json()['ip']
+
+try:
+    ip = requests.get("https://api.ipify.org?format=json").json()['ip']
+except:
+    ip = "127.0.0.1"
 logger.log('Starting bot at {}'.format(ip))
 
 #-----------------------------------
