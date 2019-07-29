@@ -142,10 +142,10 @@ def get_logs(bot, update, args):
             msg = logger.get(50)
         messager.send_text(bot, update.message.chat_id, msg)
     except Exception as e:
-        logger.log('getlogs - {}'.format(e))
+        logger.log(f"getlogs - {e}")
         messager.send_text(
             bot, update.message.chat_id,
-            "Error while getting logs {}".format(e))
+            f"Error while getting logs {e}")
 
 
 #---BLOCKING COMMANDS---
@@ -158,7 +158,7 @@ def block_user(bot, update):
     user_id = get_forwarded_userid(update.message.reply_to_message)
     if user_id is not None:
         blocker.block_user(user_id)
-        messager.send_text(bot, my_id, "Blocked user {}".format(user_id))
+        messager.send_text(bot, my_id, f"Blocked user {user_id}")
     
 
 
@@ -170,7 +170,7 @@ def unblock_user(bot, update):
     user_id = get_forwarded_userid(update.message.reply_to_message)
     if user_id is not None:
         blocker.unblock_user(user_id)
-        messager.send_text(bot, my_id, "Unblocked user {}".format(user_id))
+        messager.send_text(bot, my_id, f"Unblocked user {user_id}")
 
 
 def list_blocked_users(bot, update):
@@ -191,15 +191,15 @@ def new_message(bot, update):
     '''
     logger.log("New message")
     sent_msg = messager.forward_message(update.message, my_id)
-    logger.log("\tForwarded to owner, msg id {}".format(sent_msg.message_id))
+    logger.log(f"\tForwarded to owner, msg id {sent_msg.message_id}")
     
     user = update.message.from_user
     forwarded_user = update.message.forward_from
     #The user forwarded a message to the bot
     if forwarded_user is not None:
         logger.log("\tOriginal message was forwarded from somebody")
-        log_msg = "\t\tStoring message id {}".format(sent_msg.message_id)
-        log_msg += " with user id {}".format(user.id)
+        log_msg = f"\t\tStoring message id {sent_msg.message_id}"
+        log_msg += f" with user id {user.id}"
         logger.log(log_msg)
         
         #Store relation between message id and user id
@@ -210,7 +210,7 @@ def new_message(bot, update):
         #Notify owner that last message was a forward
         messager.send_text(
             bot, my_id,
-            "Message forwarded by user @{}".format(user.username),
+            f"Message forwarded by user @{user.username}",
             reply=sent_msg.message_id)
 
 
@@ -224,9 +224,7 @@ def owner_message(bot, update):
     #Get user id
     user_id = get_forwarded_userid(message)
     
-    log_msg = "\tReplying to user id {}".format(user_id)
-    log_msg += ", "
-    log_msg += "msg id {}".format(message.message_id)
+    log_msg = f"\tReplying to user id {user_id}, msg id {message.message_id}"
     logger.log(log_msg)
     if user_id is not None:
         #Copy the reply text and send to the user
@@ -243,7 +241,7 @@ try:
     ip = requests.get("https://api.ipify.org?format=json").json()['ip']
 except:
     ip = "127.0.0.1"
-logger.log('Starting bot at {}'.format(ip))
+logger.log(f'Starting bot at {ip}')
 
 #-----------------------------------
 #    Start system logging

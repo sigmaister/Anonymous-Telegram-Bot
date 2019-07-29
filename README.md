@@ -1,7 +1,7 @@
 # Anonymous Telegram Bot
 This project is a Telegram bot. The bot itself acts as a secure wall between other users and yourself, making you anonymous while providing text replies to the other users. The idea behind this bot is for people who own public channels and don't want to expose their private profiles to everybody.
 
-It has been developed using **Python v3.5** and [*Python Telegram Bot*](https://python-telegram-bot.readthedocs.io/en/stable/) v11.1.0
+It has been developed using **Python v3.7** and [*Python Telegram Bot*](https://python-telegram-bot.readthedocs.io/en/stable/) v11.1.0
 > Python2.7 release [here](https://github.com/fndh/Anonymous-Telegram-Bot/releases/tag/b784a13)
 
 # How to set it up
@@ -20,7 +20,7 @@ It has been developed using **Python v3.5** and [*Python Telegram Bot*](https://
 
 # Future improvements
 
-- [x] Updated to Python v3
+- [x] Updated to Python v3.7
 - [ ] Allow non-text replies
 - [x] Implement multi-column keyboard in owner /help messages
 

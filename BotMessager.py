@@ -33,9 +33,8 @@ class Messager():
         except TelegramError as e:
             # Log the errors
             self.logger.log(
-                "TelegramError when sending message to {}:".format(user))
-            self.logger.log(
-                "\t{} - Try #{}/3".format(e, tried))
+                    f"TelegramError when sending message to {user}:")
+            self.logger.log(f"\t{e} - Try #{tried}/3")
             if e == 'Timed out' and tried < 3:
                 # Retry up to 3 times
                 return self.send_text(
