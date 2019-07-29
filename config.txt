@@ -1,3 +1,3 @@
-***REMOVED***
-***REMOVED***/
-***REMOVED***
+<Your bot token here>
+<System path here>
+<Your telegram unique identifier here>
