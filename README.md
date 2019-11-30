@@ -25,6 +25,3 @@ It has been developed using **Python v3.7** and [*Python Telegram Bot*](https://
 - [x] Implement multi-column keyboard in owner /help messages
 
 You can find the changelog [here](https://github.com/fndh/Anonymous-Telegram-Bot/wiki/Changelog)
-
-# Contact
-You can contact me via Telegram &rarr; [@Fndh_Anonymous_Bot](https://t.me/Fndh_Anonymous_Bot)
